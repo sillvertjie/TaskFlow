@@ -1,7 +1,13 @@
+import Header from "@/components/layout/Header";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">TaskFlow</h1>
+    <main className="min-h-screen">
+      <Header />
+
+      <section className="flex min-h-[80vh] items-center justify-center">
+        <h2 className="text-4xl font-bold">TaskFlow</h2>
+      </section>
     </main>
   );
 }
