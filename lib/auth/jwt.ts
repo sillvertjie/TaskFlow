@@ -1,15 +1,13 @@
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined");
+export interface JwtPayload extends JWTPayload {
+  userId: string;
 }
 
-const secret = new TextEncoder().encode(JWT_SECRET);
-
-export async function createToken(payload: { userId: string }) {
-  return new SignJWT(payload)
+export async function createToken(payload: JwtPayload): Promise<string> {
+  return await new SignJWT(payload)
     .setProtectedHeader({
       alg: "HS256",
     })
@@ -18,10 +16,12 @@ export async function createToken(payload: { userId: string }) {
     .sign(secret);
 }
 
-export async function verifyToken(token: string) {
-  const { payload } = await jwtVerify(token, secret);
+export async function verifyToken(token: string): Promise<JwtPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret);
 
-  return payload as {
-    userId: string;
-  };
+    return payload as JwtPayload;
+  } catch {
+    return null;
+  }
 }
