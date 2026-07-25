@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useToast } from "@/lib/toast/context";
+
 interface TaskItemProps {
   id: string;
   title: string;
@@ -21,6 +23,8 @@ export default function TaskItem({
   onUpdated,
   onDeleted,
 }: TaskItemProps) {
+  const { showToast } = useToast();
+
   const [editing, setEditing] = useState(false);
 
   const [value, setValue] = useState(title);
@@ -40,6 +44,7 @@ export default function TaskItem({
   async function handleUpdate() {
     if (!value.trim()) {
       setError("Task title required");
+      showToast("Task title required", "error");
       return;
     }
 
@@ -68,12 +73,16 @@ export default function TaskItem({
 
       setEditing(false);
 
+      showToast("Task updated successfully", "success");
+
       onUpdated();
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
+        showToast(error.message, "error");
       } else {
         setError("Failed to update task");
+        showToast("Failed to update task", "error");
       }
     } finally {
       setLoading(false);
@@ -101,12 +110,16 @@ export default function TaskItem({
         throw new Error(data.message ?? "Failed to delete task");
       }
 
+      showToast("Task deleted successfully", "success");
+
       onDeleted();
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
+        showToast(error.message, "error");
       } else {
         setError("Failed to delete task");
+        showToast("Failed to delete task", "error");
       }
     } finally {
       setLoading(false);
@@ -115,10 +128,16 @@ export default function TaskItem({
 
   function cancelEdit() {
     setEditing(false);
+
     setValue(title);
+
     setDescriptionValue(description ?? "");
+
     setPriorityValue(priority);
+
     setDueDateValue(dueDate ? dueDate.slice(0, 10) : "");
+
+    setError(null);
   }
 
   return (
@@ -149,7 +168,9 @@ export default function TaskItem({
             disabled={loading}
           >
             <option value="LOW">Low</option>
+
             <option value="MEDIUM">Medium</option>
+
             <option value="HIGH">High</option>
           </select>
 
@@ -185,9 +206,9 @@ export default function TaskItem({
             <button
               onClick={handleUpdate}
               disabled={loading}
-              className="rounded bg-black px-3 py-1 text-sm text-white"
+              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
 
             <button
@@ -211,9 +232,9 @@ export default function TaskItem({
             <button
               onClick={handleDelete}
               disabled={loading}
-              className="rounded bg-red-600 px-3 py-1 text-sm text-white"
+              className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
             >
-              Delete
+              {loading ? "Deleting..." : "Delete"}
             </button>
           </>
         )}

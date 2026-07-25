@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 
-import "./globals.css";
-
 import Header from "@/components/layout/Header";
+import { ToastProvider } from "@/lib/toast/context";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "TaskFlow",
-  description: "Task management application",
+  description: "Simple task management app",
 };
 
 export default function RootLayout({
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Header />
+        <ToastProvider>
+          <Header />
 
-        {children}
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
