@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import CreateTaskForm from "./CreateTaskForm";
 
+import TaskItem from "./TaskItem";
+
 interface Task {
   id: string;
   title: string;
@@ -83,12 +85,13 @@ export default function TaskList({ columnId }: TaskListProps) {
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
-            <div
+            <TaskItem
               key={task.id}
-              className="rounded-lg border bg-gray-50 p-3 shadow-sm"
-            >
-              <p className="text-sm font-medium text-gray-900">{task.title}</p>
-            </div>
+              id={task.id}
+              title={task.title}
+              onUpdated={refreshTasks}
+              onDeleted={refreshTasks}
+            />
           ))}
         </div>
       )}
