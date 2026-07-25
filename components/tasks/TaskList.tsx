@@ -21,12 +21,14 @@ interface TaskListProps {
   columnId: string;
   tasks: Task[];
   onRefresh: () => void;
+  shortcutEnabled?: boolean;
 }
 
 export default function TaskList({
   columnId,
   tasks,
   onRefresh,
+  shortcutEnabled = false,
 }: TaskListProps) {
   return (
     <div className="mt-4 flex-1 space-y-4 overflow-y-auto">
@@ -54,7 +56,11 @@ export default function TaskList({
         </SortableContext>
       )}
 
-      <CreateTaskForm columnId={columnId} onCreated={onRefresh} />
+      <CreateTaskForm
+        columnId={columnId}
+        onCreated={onRefresh}
+        shortcutEnabled={shortcutEnabled}
+      />
     </div>
   );
 }

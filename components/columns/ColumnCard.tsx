@@ -18,6 +18,7 @@ interface ColumnCardProps {
   name: string;
   tasks: Task[];
   onRefresh: () => void;
+  shortcutEnabled?: boolean;
 }
 
 export default function ColumnCard({
@@ -25,6 +26,7 @@ export default function ColumnCard({
   name,
   tasks,
   onRefresh,
+  shortcutEnabled = false,
 }: ColumnCardProps) {
   const { setNodeRef } = useDroppable({
     id,
@@ -43,7 +45,12 @@ dark:text-white"
         {name}
       </h2>
 
-      <TaskList columnId={id} tasks={tasks} onRefresh={onRefresh} />
+      <TaskList
+        columnId={id}
+        tasks={tasks}
+        onRefresh={onRefresh}
+        shortcutEnabled={shortcutEnabled}
+      />
     </div>
   );
 }

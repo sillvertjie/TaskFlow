@@ -1,21 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useToast } from "@/lib/toast/context";
 
 interface CreateTaskFormProps {
   columnId: string;
   onCreated: () => void;
+  shortcutEnabled?: boolean;
 }
 
 export default function CreateTaskForm({
   columnId,
   onCreated,
+  shortcutEnabled = false,
 }: CreateTaskFormProps) {
   const { showToast } = useToast();
 
   const [title, setTitle] = useState("");
+  const titleRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState("");
 
   const [priority, setPriority] = useState("MEDIUM");
@@ -25,6 +28,28 @@ export default function CreateTaskForm({
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!shortcutEnabled) {
+      return;
+    }
+
+    console.log("shortcut active");
+
+    function handleKeyboard(event: KeyboardEvent) {
+      if (event.altKey && event.key.toLowerCase() === "n") {
+        event.preventDefault();
+
+        titleRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboard);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyboard);
+    };
+  }, [shortcutEnabled]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,6 +111,7 @@ export default function CreateTaskForm({
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-2">
       <input
+        ref={titleRef}
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         placeholder="Task title"

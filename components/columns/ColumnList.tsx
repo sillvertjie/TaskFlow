@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 
@@ -40,6 +40,8 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   const [syncing, setSyncing] = useState(false);
 
   const [search, setSearch] = useState("");
+
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const { showToast } = useToast();
 
@@ -123,6 +125,22 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       setSyncing(false);
     }
   }
+
+  useEffect(() => {
+    function handleKeyboard(event: KeyboardEvent) {
+      if (event.ctrlKey && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+
+        searchRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboard);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyboard);
+    };
+  }, []);
 
   function calculateNewColumns(current: Column[], event: DragEndEvent) {
     const { active, over } = event;
@@ -247,6 +265,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   return (
     <>
       <input
+        ref={searchRef}
         type="text"
         placeholder="Search task..."
         value={search}
@@ -289,13 +308,14 @@ export default function ColumnList({ boardId }: ColumnListProps) {
               lg:grid-cols-3
             "
           >
-            {filteredColumns.map((column) => (
+            {filteredColumns.map((column, index) => (
               <ColumnCard
                 key={column.id}
                 id={column.id}
                 name={column.name}
                 tasks={column.tasks}
                 onRefresh={loadColumns}
+                shortcutEnabled={index === 0}
               />
             ))}
           </div>
