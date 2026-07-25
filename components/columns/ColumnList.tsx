@@ -36,6 +36,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const { showToast } = useToast();
+  const [search, setSearch] = useState("");
 
   const loadColumns = useCallback(async () => {
     try {
@@ -228,8 +229,31 @@ export default function ColumnList({ boardId }: ColumnListProps) {
     return <p className="text-red-500">{error}</p>;
   }
 
+  const filteredColumns = columns.map((column) => ({
+    ...column,
+    tasks: column.tasks.filter((task) =>
+      task.title.toLowerCase().includes(search.toLowerCase()),
+    ),
+  }));
+
   return (
     <>
+      <input
+        type="text"
+        placeholder="Search task..."
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        className="
+        mb-4
+        w-full
+        rounded
+        border
+        bg-white
+        px-3
+        py-2
+        text-gray-900
+      "
+      />
       {syncing && <p className="mb-2 text-xs text-gray-400">Saving order...</p>}
 
       {columns.length === 0 ? (
@@ -243,7 +267,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
           onDragEnd={handleDragEnd}
         >
           <div className="grid gap-4 md:grid-cols-3">
-            {columns.map((column) => (
+            {filteredColumns.map((column) => (
               <ColumnCard
                 key={column.id}
                 id={column.id}
