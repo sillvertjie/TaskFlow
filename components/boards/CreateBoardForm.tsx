@@ -57,7 +57,7 @@ export default function CreateBoardForm({ onCreated }: CreateBoardFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
       >
         {loading ? "Creating..." : "Create"}
       </button>

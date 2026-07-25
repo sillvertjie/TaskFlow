@@ -5,8 +5,8 @@ import AuthForm from "@/components/auth/AuthForm";
 export default function RegisterPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+      <div className="w-full max-w-md rounded-xl bg-background p-8 shadow-lg">
+        <h1 className="mb-2 text-3xl font-bold text-foreground">
           Create Account
         </h1>
 

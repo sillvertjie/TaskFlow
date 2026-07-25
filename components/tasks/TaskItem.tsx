@@ -28,7 +28,6 @@ export default function TaskItem({
   const [editing, setEditing] = useState(false);
 
   const [value, setValue] = useState(title);
-
   const [descriptionValue, setDescriptionValue] = useState(description ?? "");
 
   const [priorityValue, setPriorityValue] = useState(priority);
@@ -128,26 +127,42 @@ export default function TaskItem({
 
   function cancelEdit() {
     setEditing(false);
-
     setValue(title);
-
     setDescriptionValue(description ?? "");
-
     setPriorityValue(priority);
-
     setDueDateValue(dueDate ? dueDate.slice(0, 10) : "");
-
     setError(null);
   }
 
   return (
-    <div className="rounded border bg-gray-50 p-3">
+    <div
+      className="
+        rounded
+        border
+        bg-gray-50
+        p-3
+        dark:border-gray-700
+        dark:bg-gray-800
+      "
+    >
       {editing ? (
         <div className="space-y-2">
           <input
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            type="date"
+            value={dueDateValue}
+            onChange={(event) => setDueDateValue(event.target.value)}
+            className="
+    w-full
+    rounded
+    border
+    bg-background
+    px-2
+    py-1
+    text-sm
+    text-foreground
+    dark:text-white
+    dark:color-scheme:dark
+  "
             disabled={loading}
           />
 
@@ -155,7 +170,16 @@ export default function TaskItem({
             value={descriptionValue}
             onChange={(event) => setDescriptionValue(event.target.value)}
             placeholder="Description"
-            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            className="
+              w-full
+              rounded
+              border
+              bg-background
+              px-2
+              py-1
+              text-sm
+              text-foreground
+            "
             disabled={loading}
           />
 
@@ -164,13 +188,20 @@ export default function TaskItem({
             onChange={(event) =>
               setPriorityValue(event.target.value as "LOW" | "MEDIUM" | "HIGH")
             }
-            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            className="
+              w-full
+              rounded
+              border
+              bg-background
+              px-2
+              py-1
+              text-sm
+              text-foreground
+            "
             disabled={loading}
           >
             <option value="LOW">Low</option>
-
             <option value="MEDIUM">Medium</option>
-
             <option value="HIGH">High</option>
           </select>
 
@@ -178,21 +209,52 @@ export default function TaskItem({
             type="date"
             value={dueDateValue}
             onChange={(event) => setDueDateValue(event.target.value)}
-            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            className="
+              w-full
+              rounded
+              border
+              bg-background
+              px-2
+              py-1
+              text-sm
+              text-foreground
+            "
             disabled={loading}
           />
         </div>
       ) : (
         <div>
-          <p className="text-sm font-medium text-gray-900">{title}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
 
-          <p className="mt-2 text-sm text-gray-600">
+          <p
+            className="
+              mt-2
+              text-sm
+              text-gray-600
+              dark:text-gray-300
+            "
+          >
             {description || "No description"}
           </p>
 
-          <p className="mt-2 text-xs text-gray-500">Priority: {priority}</p>
+          <p
+            className="
+              mt-2
+              text-xs
+              text-gray-500
+              dark:text-gray-400
+            "
+          >
+            Priority: {priority}
+          </p>
 
-          <p className="text-xs text-gray-500">
+          <p
+            className="
+              text-xs
+              text-gray-500
+              dark:text-gray-400
+            "
+          >
             Due date: {dueDate ? dueDate.slice(0, 10) : "-"}
           </p>
         </div>
@@ -206,7 +268,17 @@ export default function TaskItem({
             <button
               onClick={handleUpdate}
               disabled={loading}
-              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+              className="
+                rounded
+                bg-black
+                px-3
+                py-1
+                text-sm
+                text-white
+                disabled:opacity-50
+                dark:bg-white
+                dark:text-black
+              "
             >
               {loading ? "Saving..." : "Save"}
             </button>
@@ -214,7 +286,15 @@ export default function TaskItem({
             <button
               onClick={cancelEdit}
               disabled={loading}
-              className="rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900"
+              className="
+                rounded
+                border
+                bg-background
+                px-3
+                py-1
+                text-sm
+                text-foreground
+              "
             >
               Cancel
             </button>
@@ -224,7 +304,15 @@ export default function TaskItem({
             <button
               onClick={() => setEditing(true)}
               disabled={loading}
-              className="rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900"
+              className="
+                rounded
+                border
+                bg-background
+                px-3
+                py-1
+                text-sm
+                text-foreground
+              "
             >
               Edit
             </button>
@@ -232,7 +320,15 @@ export default function TaskItem({
             <button
               onClick={handleDelete}
               disabled={loading}
-              className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+              className="
+                rounded
+                bg-red-600
+                px-3
+                py-1
+                text-sm
+                text-white
+                disabled:opacity-50
+              "
             >
               {loading ? "Deleting..." : "Delete"}
             </button>

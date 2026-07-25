@@ -33,9 +33,15 @@ export default function ColumnCard({
   return (
     <div
       ref={setNodeRef}
-      className="flex min-h-72 flex-col rounded-lg border bg-white p-4 shadow-sm"
+      className="flex min-h-72 flex-col rounded-lg border bg-white
+dark:bg-gray-900 p-4 shadow-sm"
     >
-      <h2 className="font-semibold text-gray-900">{name}</h2>
+      <h2
+        className="font-semibold text-gray-900
+dark:text-white"
+      >
+        {name}
+      </h2>
 
       <TaskList columnId={id} tasks={tasks} onRefresh={onRefresh} />
     </div>

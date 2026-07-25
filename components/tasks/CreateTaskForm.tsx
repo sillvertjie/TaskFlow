@@ -90,22 +90,38 @@ export default function CreateTaskForm({
         onChange={(event) => setTitle(event.target.value)}
         placeholder="Task title"
         disabled={loading}
-        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        className="w-full rounded-lg border px-3 py-2 text-sm text-foreground"
       />
 
       <textarea
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-        placeholder="Description"
-        disabled={loading}
-        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        className="
+   w-full
+   rounded-lg
+   border
+   bg-background
+   px-3
+   py-2
+   text-sm
+   text-foreground
+   placeholder:text-gray-400
+ "
       />
 
       <select
         value={priority}
         onChange={(event) => setPriority(event.target.value)}
         disabled={loading}
-        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        className="
+   w-full
+   rounded-lg
+   border
+   bg-background
+   px-3
+   py-2
+   text-sm
+   text-foreground
+   placeholder:text-gray-400
+ "
       >
         <option value="LOW">Low</option>
 
@@ -119,17 +135,34 @@ export default function CreateTaskForm({
         value={dueDate}
         onChange={(event) => setDueDate(event.target.value)}
         disabled={loading}
-        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        className="
+    w-full
+    rounded-lg
+    border
+    bg-background
+    px-3
+    py-2
+    text-sm
+    text-foreground
+    dark:text-white
+    dark:color-scheme:dark
+  "
       />
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <button
-        type="submit"
-        disabled={loading}
-        className="rounded bg-black px-3 py-2 text-sm text-white disabled:opacity-50"
+        className="
+    rounded
+    bg-foreground
+    px-3
+    py-2
+    text-sm
+    text-background
+    disabled:opacity-50
+  "
       >
-        {loading ? "Creating..." : "Add Task"}
+        Add Task
       </button>
     </form>
   );

@@ -10,7 +10,7 @@ export default async function BoardPage({ params }: BoardPageProps) {
   const { id } = await params;
 
   return (
-    <main className="min-h-screen bg-black p-8 text-white">
+    <main className="min-h-screen bg-background p-8 text-foreground">
       <h1 className="mb-6 text-3xl font-bold">Board</h1>
 
       <ColumnList boardId={id} />

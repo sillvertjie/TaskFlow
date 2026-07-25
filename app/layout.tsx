@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import Header from "@/components/layout/Header";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ToastProvider } from "@/lib/toast/context";
 
 import "./globals.css";
@@ -18,11 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastProvider>
-          <Header />
+        <ThemeProvider>
+          <ToastProvider>
+            <Header />
 
-          {children}
-        </ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
