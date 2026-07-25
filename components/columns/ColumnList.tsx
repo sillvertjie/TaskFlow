@@ -30,7 +30,9 @@ interface ColumnListProps {
 
 export default function ColumnList({ boardId }: ColumnListProps) {
   const [columns, setColumns] = useState<Column[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   const loadColumns = useCallback(async () => {
@@ -48,6 +50,10 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       const result = await Promise.all(
         data.columns.map(async (column: Omit<Column, "tasks">) => {
           const tasksResponse = await fetch(`/api/columns/${column.id}/tasks`);
+
+          if (!tasksResponse.ok) {
+            throw new Error();
+          }
 
           const tasksData = await tasksResponse.json();
 
@@ -67,6 +73,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   useEffect(() => {
     async function init() {
       await loadColumns();
+
       setLoading(false);
     }
 
@@ -79,17 +86,44 @@ export default function ColumnList({ boardId }: ColumnListProps) {
     );
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function syncTaskOrder(updatedColumns: Column[]) {
+    const tasks = updatedColumns.flatMap((column) =>
+      column.tasks.map((task, index) => ({
+        id: task.id,
+        columnId: column.id,
+        position: index,
+      })),
+    );
+
+    const response = await fetch("/api/tasks/reorder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tasks,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to sync task order");
+    }
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
     if (!over) {
       return;
     }
 
+    let updatedColumns: Column[] = [];
+
     setColumns((current) => {
       const sourceColumn = findColumnByTask(current, String(active.id));
 
       if (!sourceColumn) {
+        updatedColumns = current;
         return current;
       }
 
@@ -98,6 +132,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
         findColumnByTask(current, String(over.id));
 
       if (!targetColumn) {
+        updatedColumns = current;
         return current;
       }
 
@@ -106,10 +141,11 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       );
 
       if (!movedTask) {
+        updatedColumns = current;
         return current;
       }
 
-      // DEV-023 reorder dalam column
+      // reorder dalam column
       if (sourceColumn.id === targetColumn.id) {
         const oldIndex = sourceColumn.tasks.findIndex(
           (task) => task.id === active.id,
@@ -120,6 +156,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
         );
 
         if (oldIndex === -1 || newIndex === -1) {
+          updatedColumns = current;
           return current;
         }
 
@@ -129,7 +166,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
 
         reordered.splice(newIndex, 0, removed);
 
-        return current.map((column) =>
+        updatedColumns = current.map((column) =>
           column.id === sourceColumn.id
             ? {
                 ...column,
@@ -137,10 +174,12 @@ export default function ColumnList({ boardId }: ColumnListProps) {
               }
             : column,
         );
+
+        return updatedColumns;
       }
 
-      // DEV-024 pindah antar column
-      return current.map((column) => {
+      // pindah antar column
+      updatedColumns = current.map((column) => {
         if (column.id === sourceColumn.id) {
           return {
             ...column,
@@ -163,7 +202,17 @@ export default function ColumnList({ boardId }: ColumnListProps) {
 
         return column;
       });
+
+      return updatedColumns;
     });
+
+    try {
+      await syncTaskOrder(updatedColumns);
+    } catch (error) {
+      console.error("Task reorder sync failed:", error);
+
+      await loadColumns();
+    }
   }
 
   if (loading) {
