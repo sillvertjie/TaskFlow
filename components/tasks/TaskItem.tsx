@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/lib/toast/context";
 
 interface TaskItemProps {
@@ -39,7 +39,7 @@ export default function TaskItem({
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
-
+  const [confirmDelete, setConfirmDelete] = useState(false);
   async function handleUpdate() {
     if (!value.trim()) {
       setError("Task title required");
@@ -89,12 +89,6 @@ export default function TaskItem({
   }
 
   async function handleDelete() {
-    const confirmed = window.confirm("Delete this task?");
-
-    if (!confirmed) {
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
@@ -318,7 +312,7 @@ export default function TaskItem({
             </button>
 
             <button
-              onClick={handleDelete}
+              onClick={() => setConfirmDelete(true)}
               disabled={loading}
               className="
                 rounded
@@ -335,6 +329,18 @@ export default function TaskItem({
           </>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete task?"
+        description="This action cannot be undone. The task will be permanently deleted."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          handleDelete();
+        }}
+      />
     </div>
   );
 }
