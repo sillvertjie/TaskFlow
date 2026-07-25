@@ -1,12 +1,16 @@
+import Link from "next/link";
+
 interface BoardCardProps {
   id: string;
   name: string;
 }
 
-export default function BoardCard({ name }: BoardCardProps) {
+export default function BoardCard({ id, name }: BoardCardProps) {
   return (
-    <div className="rounded-lg border p-4 shadow-sm">
-      <h2 className="text-lg font-semibold">{name}</h2>
-    </div>
+    <Link href={`/boards/${id}`} className="block">
+      <div className="rounded-lg border bg-white p-4 text-black shadow-sm transition hover:shadow-md">
+        <h2 className="font-semibold">{name}</h2>
+      </div>
+    </Link>
   );
 }

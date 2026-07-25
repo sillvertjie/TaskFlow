@@ -18,10 +18,10 @@ async function getUserId() {
   return payload?.userId ?? null;
 }
 
-async function getOwnedBoard(id: string, userId: string) {
+async function getOwnedBoard(boardId: string, userId: string) {
   return prisma.board.findFirst({
     where: {
-      id: id,
+      id: boardId,
       userId,
     },
   });
@@ -31,7 +31,7 @@ export async function GET(
   _request: Request,
   context: {
     params: Promise<{
-      boardId: string;
+      id: string;
     }>;
   },
 ) {
@@ -49,9 +49,9 @@ export async function GET(
       );
     }
 
-    const { boardId } = await context.params;
+    const { id } = await context.params;
 
-    const board = await getOwnedBoard(boardId, userId);
+    const board = await getOwnedBoard(id, userId);
 
     if (!board) {
       return NextResponse.json(
@@ -66,7 +66,7 @@ export async function GET(
 
     const columns = await prisma.column.findMany({
       where: {
-        boardId,
+        boardId: id,
       },
       orderBy: {
         position: "asc",
@@ -77,7 +77,7 @@ export async function GET(
       columns,
     });
   } catch (error) {
-    console.error("GET columns error:", error);
+    console.error("GET /api/boards/[id]/columns error:", error);
 
     return NextResponse.json(
       {
@@ -94,7 +94,7 @@ export async function POST(
   request: Request,
   context: {
     params: Promise<{
-      boardId: string;
+      id: string;
     }>;
   },
 ) {
@@ -112,9 +112,9 @@ export async function POST(
       );
     }
 
-    const { boardId } = await context.params;
+    const { id } = await context.params;
 
-    const board = await getOwnedBoard(boardId, userId);
+    const board = await getOwnedBoard(id, userId);
 
     if (!board) {
       return NextResponse.json(
@@ -144,18 +144,20 @@ export async function POST(
 
     const lastColumn = await prisma.column.findFirst({
       where: {
-        boardId,
+        boardId: id,
       },
       orderBy: {
         position: "desc",
       },
     });
 
+    const position = lastColumn ? lastColumn.position + 1 : 0;
+
     const column = await prisma.column.create({
       data: {
         name,
-        boardId,
-        position: lastColumn ? lastColumn.position + 1 : 0,
+        position,
+        boardId: id,
       },
     });
 
@@ -168,7 +170,7 @@ export async function POST(
       },
     );
   } catch (error) {
-    console.error("POST columns error:", error);
+    console.error("POST /api/boards/[id]/columns error:", error);
 
     return NextResponse.json(
       {
