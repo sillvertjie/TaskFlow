@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth/jwt";
+import { taskSchema } from "@/lib/validators/task";
 
 async function getUserId() {
   const cookieStore = await cookies();
@@ -131,18 +132,21 @@ export async function POST(
 
     const body = await request.json();
 
-    const title = body.title?.trim();
+    const result = taskSchema.safeParse(body);
 
-    if (!title) {
+    if (!result.success) {
       return NextResponse.json(
         {
-          message: "Task title required",
+          message: "Invalid task input",
+          errors: result.error.flatten(),
         },
         {
           status: 400,
         },
       );
     }
+
+    const { title, description, priority, dueDate } = result.data;
 
     const lastTask = await prisma.task.findFirst({
       where: {
@@ -158,6 +162,9 @@ export async function POST(
     const task = await prisma.task.create({
       data: {
         title,
+        description,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : null,
         position,
         columnId: id,
       },

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth/jwt";
+import { taskSchema } from "@/lib/validators/task";
 
 async function getUserId() {
   const cookieStore = await cookies();
@@ -70,6 +71,22 @@ export async function PATCH(
 
     const body = await request.json();
 
+    const result = taskSchema.partial().safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          message: "Invalid task input",
+          errors: result.error.flatten(),
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const { title, description, priority, dueDate } = result.data;
+
     const data: {
       title?: string;
       description?: string | null;
@@ -77,33 +94,37 @@ export async function PATCH(
       dueDate?: Date | null;
     } = {};
 
-    if (body.title !== undefined) {
-      const title = body.title.trim();
-
-      if (!title) {
-        return NextResponse.json(
-          {
-            message: "Task title required",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
+    if (title !== undefined) {
       data.title = title;
     }
 
-    if (body.description !== undefined) {
-      data.description = body.description;
+    if (description !== undefined) {
+      data.description = description;
     }
 
-    if (body.priority !== undefined) {
-      data.priority = body.priority;
+    if (priority !== undefined) {
+      data.priority = priority;
     }
 
-    if (body.dueDate !== undefined) {
-      data.dueDate = body.dueDate ? new Date(body.dueDate) : null;
+    if (dueDate !== undefined) {
+      if (!dueDate) {
+        data.dueDate = null;
+      } else {
+        const parsedDate = new Date(dueDate);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+          return NextResponse.json(
+            {
+              message: "Invalid due date",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        data.dueDate = parsedDate;
+      }
     }
 
     const updatedTask = await prisma.task.update({
