@@ -9,6 +9,9 @@ import TaskItem from "./TaskItem";
 interface Task {
   id: string;
   title: string;
+  description: string | null;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  dueDate: string | null;
 }
 
 interface TaskListProps {
@@ -89,6 +92,9 @@ export default function TaskList({ columnId }: TaskListProps) {
               key={task.id}
               id={task.id}
               title={task.title}
+              description={task.description}
+              priority={task.priority}
+              dueDate={task.dueDate}
               onUpdated={refreshTasks}
               onDeleted={refreshTasks}
             />

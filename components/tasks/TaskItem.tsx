@@ -5,6 +5,9 @@ import { useState } from "react";
 interface TaskItemProps {
   id: string;
   title: string;
+  description: string | null;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  dueDate: string | null;
   onUpdated: () => void;
   onDeleted: () => void;
 }
@@ -12,12 +15,23 @@ interface TaskItemProps {
 export default function TaskItem({
   id,
   title,
+  description,
+  priority,
+  dueDate,
   onUpdated,
   onDeleted,
 }: TaskItemProps) {
   const [editing, setEditing] = useState(false);
 
   const [value, setValue] = useState(title);
+
+  const [descriptionValue, setDescriptionValue] = useState(description ?? "");
+
+  const [priorityValue, setPriorityValue] = useState(priority);
+
+  const [dueDateValue, setDueDateValue] = useState(
+    dueDate ? dueDate.slice(0, 10) : "",
+  );
 
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +54,9 @@ export default function TaskItem({
         },
         body: JSON.stringify({
           title: value,
+          description: descriptionValue || null,
+          priority: priorityValue,
+          dueDate: dueDateValue || null,
         }),
       });
 
@@ -96,17 +113,68 @@ export default function TaskItem({
     }
   }
 
+  function cancelEdit() {
+    setEditing(false);
+    setValue(title);
+    setDescriptionValue(description ?? "");
+    setPriorityValue(priority);
+    setDueDateValue(dueDate ? dueDate.slice(0, 10) : "");
+  }
+
   return (
     <div className="rounded border bg-gray-50 p-3">
       {editing ? (
-        <input
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400"
-          disabled={loading}
-        />
+        <div className="space-y-2">
+          <input
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            disabled={loading}
+          />
+
+          <textarea
+            value={descriptionValue}
+            onChange={(event) => setDescriptionValue(event.target.value)}
+            placeholder="Description"
+            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            disabled={loading}
+          />
+
+          <select
+            value={priorityValue}
+            onChange={(event) =>
+              setPriorityValue(event.target.value as "LOW" | "MEDIUM" | "HIGH")
+            }
+            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            disabled={loading}
+          >
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+          </select>
+
+          <input
+            type="date"
+            value={dueDateValue}
+            onChange={(event) => setDueDateValue(event.target.value)}
+            className="w-full rounded border bg-white px-2 py-1 text-sm text-gray-900"
+            disabled={loading}
+          />
+        </div>
       ) : (
-        <p className="text-sm font-medium text-gray-900">{title}</p>
+        <div>
+          <p className="text-sm font-medium text-gray-900">{title}</p>
+
+          <p className="mt-2 text-sm text-gray-600">
+            {description || "No description"}
+          </p>
+
+          <p className="mt-2 text-xs text-gray-500">Priority: {priority}</p>
+
+          <p className="text-xs text-gray-500">
+            Due date: {dueDate ? dueDate.slice(0, 10) : "-"}
+          </p>
+        </div>
       )}
 
       {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
@@ -123,10 +191,7 @@ export default function TaskItem({
             </button>
 
             <button
-              onClick={() => {
-                setEditing(false);
-                setValue(title);
-              }}
+              onClick={cancelEdit}
               disabled={loading}
               className="rounded border border-gray-300 bg-white px-3 py-1 text-sm text-gray-900"
             >

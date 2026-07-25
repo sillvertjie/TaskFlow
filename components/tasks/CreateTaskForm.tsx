@@ -12,7 +12,12 @@ export default function CreateTaskForm({
   onCreated,
 }: CreateTaskFormProps) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
+  const [dueDate, setDueDate] = useState("");
+
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -34,6 +39,9 @@ export default function CreateTaskForm({
         },
         body: JSON.stringify({
           title,
+          description: description || null,
+          priority,
+          dueDate: dueDate || null,
         }),
       });
 
@@ -44,6 +52,9 @@ export default function CreateTaskForm({
       }
 
       setTitle("");
+      setDescription("");
+      setPriority("MEDIUM");
+      setDueDate("");
 
       onCreated();
     } catch (error) {
@@ -63,7 +74,36 @@ export default function CreateTaskForm({
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         placeholder="Task title"
-        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
+        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        disabled={loading}
+      />
+
+      <textarea
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        placeholder="Description"
+        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        disabled={loading}
+      />
+
+      <select
+        value={priority}
+        onChange={(event) => setPriority(event.target.value)}
+        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
+        disabled={loading}
+      >
+        <option value="LOW">Low</option>
+
+        <option value="MEDIUM">Medium</option>
+
+        <option value="HIGH">High</option>
+      </select>
+
+      <input
+        type="date"
+        value={dueDate}
+        onChange={(event) => setDueDate(event.target.value)}
+        className="w-full rounded-lg border px-3 py-2 text-sm text-gray-900"
         disabled={loading}
       />
 
