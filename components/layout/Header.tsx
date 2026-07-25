@@ -12,18 +12,23 @@ export default function Header() {
   const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadUser() {
-      const response = await fetch("/api/me");
+      try {
+        const response = await fetch("/api/me");
 
-      if (!response.ok) {
-        return;
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+
+        setUser(data.user);
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-
-      setUser(data.user);
     }
 
     loadUser();
@@ -43,7 +48,7 @@ export default function Header() {
       <h1 className="text-xl font-bold">TaskFlow</h1>
 
       <div className="flex items-center gap-4">
-        {user && (
+        {!loading && user && (
           <>
             <span className="text-sm text-gray-700">{user.email}</span>
 

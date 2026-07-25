@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import BoardCard from "./BoardCard";
 import CreateBoardForm from "./CreateBoardForm";
 
+import EmptyState from "@/components/ui/EmptyState";
+
 interface Board {
   id: string;
   name: string;
@@ -82,7 +84,10 @@ export default function BoardList() {
       {error && <p className="text-red-500">{error}</p>}
 
       {boards.length === 0 ? (
-        <p>No boards yet.</p>
+        <EmptyState
+          title="No boards yet"
+          description="Create your first board to start organizing your work."
+        />
       ) : (
         <div className="grid gap-4">
           {boards.map((board) => (

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import ColumnCard from "./ColumnCard";
 
+import EmptyState from "@/components/ui/EmptyState";
+
 interface Column {
   id: string;
   name: string;
@@ -64,7 +66,12 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   }
 
   if (columns.length === 0) {
-    return <p>No columns yet.</p>;
+    return (
+      <EmptyState
+        title="No columns yet"
+        description="Create your first column to start organizing this board."
+      />
+    );
   }
 
   return (
