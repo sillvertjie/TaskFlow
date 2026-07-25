@@ -77,7 +77,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {columns.map((column) => (
-        <ColumnCard key={column.id} name={column.name} />
+        <ColumnCard key={column.id} id={column.id} name={column.name} />
       ))}
     </div>
   );
