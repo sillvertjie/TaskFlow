@@ -30,10 +30,9 @@ interface ColumnListProps {
 
 export default function ColumnList({ boardId }: ColumnListProps) {
   const [columns, setColumns] = useState<Column[]>([]);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   const loadColumns = useCallback(async () => {
     try {
@@ -73,145 +72,151 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   useEffect(() => {
     async function init() {
       await loadColumns();
-
       setLoading(false);
     }
 
     init();
   }, [loadColumns]);
 
-  function findColumnByTask(columns: Column[], taskId: string) {
-    return columns.find((column) =>
+  function findColumnByTask(data: Column[], taskId: string) {
+    return data.find((column) =>
       column.tasks.some((task) => task.id === taskId),
     );
   }
 
   async function syncTaskOrder(updatedColumns: Column[]) {
-    const tasks = updatedColumns.flatMap((column) =>
-      column.tasks.map((task, index) => ({
-        id: task.id,
-        columnId: column.id,
-        position: index,
-      })),
-    );
+    setSyncing(true);
 
-    const response = await fetch("/api/tasks/reorder", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        tasks,
-      }),
-    });
+    try {
+      const tasks = updatedColumns.flatMap((column) =>
+        column.tasks.map((task, index) => ({
+          id: task.id,
+          columnId: column.id,
+          position: index,
+        })),
+      );
 
-    if (!response.ok) {
-      throw new Error("Failed to sync task order");
+      const response = await fetch("/api/tasks/reorder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tasks,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+    } finally {
+      setSyncing(false);
     }
   }
 
-  async function handleDragEnd(event: DragEndEvent) {
+  function calculateNewColumns(current: Column[], event: DragEndEvent) {
     const { active, over } = event;
 
     if (!over) {
-      return;
+      return current;
     }
 
-    let updatedColumns: Column[] = [];
+    const sourceColumn = findColumnByTask(current, String(active.id));
 
-    setColumns((current) => {
-      const sourceColumn = findColumnByTask(current, String(active.id));
+    if (!sourceColumn) {
+      return current;
+    }
 
-      if (!sourceColumn) {
-        updatedColumns = current;
-        return current;
-      }
+    const targetColumn =
+      current.find((column) => column.id === over.id) ??
+      findColumnByTask(current, String(over.id));
 
-      const targetColumn =
-        current.find((column) => column.id === over.id) ??
-        findColumnByTask(current, String(over.id));
+    if (!targetColumn) {
+      return current;
+    }
 
-      if (!targetColumn) {
-        updatedColumns = current;
-        return current;
-      }
+    const movedTask = sourceColumn.tasks.find((task) => task.id === active.id);
 
-      const movedTask = sourceColumn.tasks.find(
+    if (!movedTask) {
+      return current;
+    }
+
+    // reorder dalam column
+    if (sourceColumn.id === targetColumn.id) {
+      const oldIndex = sourceColumn.tasks.findIndex(
         (task) => task.id === active.id,
       );
 
-      if (!movedTask) {
-        updatedColumns = current;
+      const newIndex = sourceColumn.tasks.findIndex(
+        (task) => task.id === over.id,
+      );
+
+      if (oldIndex === -1 || newIndex === -1) {
         return current;
       }
 
-      // reorder dalam column
-      if (sourceColumn.id === targetColumn.id) {
-        const oldIndex = sourceColumn.tasks.findIndex(
-          (task) => task.id === active.id,
-        );
+      const reordered = [...sourceColumn.tasks];
 
-        const newIndex = sourceColumn.tasks.findIndex(
-          (task) => task.id === over.id,
-        );
+      const [removed] = reordered.splice(oldIndex, 1);
 
-        if (oldIndex === -1 || newIndex === -1) {
-          updatedColumns = current;
-          return current;
-        }
+      reordered.splice(newIndex, 0, removed);
 
-        const reordered = [...sourceColumn.tasks];
+      return current.map((column) =>
+        column.id === sourceColumn.id
+          ? {
+              ...column,
+              tasks: reordered,
+            }
+          : column,
+      );
+    }
 
-        const [removed] = reordered.splice(oldIndex, 1);
+    // pindah antar column
 
-        reordered.splice(newIndex, 0, removed);
-
-        updatedColumns = current.map((column) =>
-          column.id === sourceColumn.id
-            ? {
-                ...column,
-                tasks: reordered,
-              }
-            : column,
-        );
-
-        return updatedColumns;
+    return current.map((column) => {
+      if (column.id === sourceColumn.id) {
+        return {
+          ...column,
+          tasks: column.tasks.filter((task) => task.id !== movedTask.id),
+        };
       }
 
-      // pindah antar column
-      updatedColumns = current.map((column) => {
-        if (column.id === sourceColumn.id) {
-          return {
-            ...column,
-            tasks: column.tasks.filter((task) => task.id !== movedTask.id),
-          };
-        }
+      if (column.id === targetColumn.id) {
+        return {
+          ...column,
+          tasks: [
+            ...column.tasks,
+            {
+              ...movedTask,
+              columnId: column.id,
+            },
+          ],
+        };
+      }
 
-        if (column.id === targetColumn.id) {
-          return {
-            ...column,
-            tasks: [
-              ...column.tasks,
-              {
-                ...movedTask,
-                columnId: column.id,
-              },
-            ],
-          };
-        }
-
-        return column;
-      });
-
-      return updatedColumns;
+      return column;
     });
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const previous = columns;
+
+    const updated = calculateNewColumns(columns, event);
+
+    setColumns(updated);
+
+    if (JSON.stringify(previous) === JSON.stringify(updated)) {
+      return;
+    }
 
     try {
-      await syncTaskOrder(updatedColumns);
-    } catch (error) {
-      console.error("Task reorder sync failed:", error);
+      await syncTaskOrder(updated);
+    } catch {
+      // rollback jika gagal
 
-      await loadColumns();
+      setColumns(previous);
+
+      console.error("Sync failed rollback");
     }
   }
 
@@ -223,28 +228,33 @@ export default function ColumnList({ boardId }: ColumnListProps) {
     return <p className="text-red-500">{error}</p>;
   }
 
-  if (columns.length === 0) {
-    return (
-      <EmptyState
-        title="No columns yet"
-        description="Create your first column to start organizing this board."
-      />
-    );
-  }
-
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="grid gap-4 md:grid-cols-3">
-        {columns.map((column) => (
-          <ColumnCard
-            key={column.id}
-            id={column.id}
-            name={column.name}
-            tasks={column.tasks}
-            onRefresh={loadColumns}
-          />
-        ))}
-      </div>
-    </DndContext>
+    <>
+      {syncing && <p className="mb-2 text-xs text-gray-400">Saving order...</p>}
+
+      {columns.length === 0 ? (
+        <EmptyState
+          title="No columns yet"
+          description="Create your first column to start organizing this board."
+        />
+      ) : (
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            {columns.map((column) => (
+              <ColumnCard
+                key={column.id}
+                id={column.id}
+                name={column.name}
+                tasks={column.tasks}
+                onRefresh={loadColumns}
+              />
+            ))}
+          </div>
+        </DndContext>
+      )}
+    </>
   );
 }
