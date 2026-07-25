@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 
+import { calculateNewColumns } from "@/lib/task/reorder";
+
 import EmptyState from "@/components/ui/EmptyState";
 
 import { useToast } from "@/lib/toast/context";
@@ -90,12 +92,6 @@ export default function ColumnList({ boardId }: ColumnListProps) {
     init();
   }, [loadColumns]);
 
-  function findColumnByTask(data: Column[], taskId: string) {
-    return data.find((column) =>
-      column.tasks.some((task) => task.id === taskId),
-    );
-  }
-
   async function syncTaskOrder(updatedColumns: Column[]) {
     setSyncing(true);
 
@@ -141,91 +137,6 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       window.removeEventListener("keydown", handleKeyboard);
     };
   }, []);
-
-  function calculateNewColumns(current: Column[], event: DragEndEvent) {
-    const { active, over } = event;
-
-    if (!over) {
-      return current;
-    }
-
-    const sourceColumn = findColumnByTask(current, String(active.id));
-
-    if (!sourceColumn) {
-      return current;
-    }
-
-    const targetColumn =
-      current.find((column) => column.id === over.id) ??
-      findColumnByTask(current, String(over.id));
-
-    if (!targetColumn) {
-      return current;
-    }
-
-    const movedTask = sourceColumn.tasks.find((task) => task.id === active.id);
-
-    if (!movedTask) {
-      return current;
-    }
-
-    // reorder dalam column
-
-    if (sourceColumn.id === targetColumn.id) {
-      const oldIndex = sourceColumn.tasks.findIndex(
-        (task) => task.id === active.id,
-      );
-
-      const newIndex = sourceColumn.tasks.findIndex(
-        (task) => task.id === over.id,
-      );
-
-      if (oldIndex === -1 || newIndex === -1) {
-        return current;
-      }
-
-      const reordered = [...sourceColumn.tasks];
-
-      const [removed] = reordered.splice(oldIndex, 1);
-
-      reordered.splice(newIndex, 0, removed);
-
-      return current.map((column) =>
-        column.id === sourceColumn.id
-          ? {
-              ...column,
-              tasks: reordered,
-            }
-          : column,
-      );
-    }
-
-    // pindah antar column
-
-    return current.map((column) => {
-      if (column.id === sourceColumn.id) {
-        return {
-          ...column,
-          tasks: column.tasks.filter((task) => task.id !== movedTask.id),
-        };
-      }
-
-      if (column.id === targetColumn.id) {
-        return {
-          ...column,
-          tasks: [
-            ...column.tasks,
-            {
-              ...movedTask,
-              columnId: column.id,
-            },
-          ],
-        };
-      }
-
-      return column;
-    });
-  }
 
   async function handleDragEnd(event: DragEndEvent) {
     const previousColumns = structuredClone(columns);
