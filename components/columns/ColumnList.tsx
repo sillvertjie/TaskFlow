@@ -6,9 +6,9 @@ import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 
 import EmptyState from "@/components/ui/EmptyState";
 
-import ColumnCard from "./ColumnCard";
-
 import { useToast } from "@/lib/toast/context";
+
+import ColumnCard from "./ColumnCard";
 
 interface Task {
   id: string;
@@ -32,11 +32,16 @@ interface ColumnListProps {
 
 export default function ColumnList({ boardId }: ColumnListProps) {
   const [columns, setColumns] = useState<Column[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+
   const [syncing, setSyncing] = useState(false);
-  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
+
+  const { showToast } = useToast();
 
   const loadColumns = useCallback(async () => {
     try {
@@ -76,6 +81,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   useEffect(() => {
     async function init() {
       await loadColumns();
+
       setLoading(false);
     }
 
@@ -146,6 +152,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
     }
 
     // reorder dalam column
+
     if (sourceColumn.id === targetColumn.id) {
       const oldIndex = sourceColumn.tasks.findIndex(
         (task) => task.id === active.id,
@@ -221,13 +228,6 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       showToast("Failed to save task position. Changes reverted.", "error");
     }
   }
-  if (loading) {
-    return <p>Loading columns...</p>;
-  }
-
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
 
   const filteredColumns = columns.map((column) => ({
     ...column,
@@ -235,6 +235,14 @@ export default function ColumnList({ boardId }: ColumnListProps) {
       task.title.toLowerCase().includes(search.toLowerCase()),
     ),
   }));
+
+  if (loading) {
+    return <p>Loading columns...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
 
   return (
     <>
@@ -244,16 +252,17 @@ export default function ColumnList({ boardId }: ColumnListProps) {
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         className="
-        mb-4
-        w-full
-        rounded
-        border
-        bg-white
-        px-3
-        py-2
-        text-gray-900
-      "
+          mb-4
+          w-full
+          rounded
+          border
+          bg-white
+          px-3
+          py-2
+          text-gray-900
+        "
       />
+
       {syncing && <p className="mb-2 text-xs text-gray-400">Saving order...</p>}
 
       {columns.length === 0 ? (
@@ -266,7 +275,20 @@ export default function ColumnList({ boardId }: ColumnListProps) {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid gap-4 md:grid-cols-3">
+          <div
+            className="
+              flex
+              gap-4
+              overflow-x-auto
+              pb-4
+              snap-x
+              snap-mandatory
+              md:grid
+              md:grid-cols-2
+              md:overflow-visible
+              lg:grid-cols-3
+            "
+          >
             {filteredColumns.map((column) => (
               <ColumnCard
                 key={column.id}
