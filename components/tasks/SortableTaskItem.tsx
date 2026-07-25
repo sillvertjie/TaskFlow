@@ -35,7 +35,18 @@ export default function SortableTaskItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <div className="mb-2 flex justify-end">
+        <button
+          type="button"
+          {...listeners}
+          className="cursor-grab rounded px-2 text-gray-400 hover:text-gray-900"
+          aria-label="Drag task"
+        >
+          ⋮⋮
+        </button>
+      </div>
+
       <TaskItem
         id={id}
         title={title}
