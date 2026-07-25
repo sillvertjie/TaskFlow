@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import CreateTaskForm from "./CreateTaskForm";
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 
-import TaskItem from "./TaskItem";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import CreateTaskForm from "./CreateTaskForm";
+import SortableTaskItem from "./SortableTaskItem";
 
 interface Task {
   id: string;
@@ -75,6 +81,28 @@ export default function TaskList({ columnId }: TaskListProps) {
     };
   }, [columnId]);
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    setTasks((currentTasks) => {
+      const oldIndex = currentTasks.findIndex((task) => task.id === active.id);
+
+      const newIndex = currentTasks.findIndex((task) => task.id === over.id);
+
+      const updatedTasks = [...currentTasks];
+
+      const [movedTask] = updatedTasks.splice(oldIndex, 1);
+
+      updatedTasks.splice(newIndex, 0, movedTask);
+
+      return updatedTasks;
+    });
+  }
+
   if (loading) {
     return <p className="mt-4 text-sm text-gray-500">Loading tasks...</p>;
   }
@@ -86,20 +114,30 @@ export default function TaskList({ columnId }: TaskListProps) {
       {tasks.length === 0 ? (
         <p className="text-sm text-gray-500">No tasks yet</p>
       ) : (
-        <div className="space-y-2">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              id={task.id}
-              title={task.title}
-              description={task.description}
-              priority={task.priority}
-              dueDate={task.dueDate}
-              onUpdated={refreshTasks}
-              onDeleted={refreshTasks}
-            />
-          ))}
-        </div>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={tasks.map((task) => task.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {tasks.map((task) => (
+                <SortableTaskItem
+                  key={task.id}
+                  id={task.id}
+                  title={task.title}
+                  description={task.description}
+                  priority={task.priority}
+                  dueDate={task.dueDate}
+                  onUpdated={refreshTasks}
+                  onDeleted={refreshTasks}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       <CreateTaskForm columnId={columnId} onCreated={refreshTasks} />
