@@ -8,6 +8,8 @@ import EmptyState from "@/components/ui/EmptyState";
 
 import ColumnCard from "./ColumnCard";
 
+import { useToast } from "@/lib/toast/context";
+
 interface Task {
   id: string;
   title: string;
@@ -33,6 +35,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const { showToast } = useToast();
 
   const loadColumns = useCallback(async () => {
     try {
@@ -199,27 +202,24 @@ export default function ColumnList({ boardId }: ColumnListProps) {
   }
 
   async function handleDragEnd(event: DragEndEvent) {
-    const previous = columns;
+    const previousColumns = structuredClone(columns);
 
-    const updated = calculateNewColumns(columns, event);
+    const updatedColumns = calculateNewColumns(columns, event);
 
-    setColumns(updated);
+    setColumns(updatedColumns);
 
-    if (JSON.stringify(previous) === JSON.stringify(updated)) {
+    if (JSON.stringify(previousColumns) === JSON.stringify(updatedColumns)) {
       return;
     }
 
     try {
-      await syncTaskOrder(updated);
+      await syncTaskOrder(updatedColumns);
     } catch {
-      // rollback jika gagal
+      setColumns(previousColumns);
 
-      setColumns(previous);
-
-      console.error("Sync failed rollback");
+      showToast("Failed to save task position. Changes reverted.", "error");
     }
   }
-
   if (loading) {
     return <p>Loading columns...</p>;
   }
