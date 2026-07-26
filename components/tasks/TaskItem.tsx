@@ -141,25 +141,6 @@ export default function TaskItem({
     >
       {editing ? (
         <div className="space-y-2">
-          <input
-            type="date"
-            value={dueDateValue}
-            onChange={(event) => setDueDateValue(event.target.value)}
-            className="
-    w-full
-    rounded
-    border
-    bg-background
-    px-2
-    py-1
-    text-sm
-    text-foreground
-    dark:text-white
-    dark:color-scheme:dark
-  "
-            disabled={loading}
-          />
-
           <textarea
             value={descriptionValue}
             onChange={(event) => setDescriptionValue(event.target.value)}
@@ -212,6 +193,7 @@ export default function TaskItem({
               py-1
               text-sm
               text-foreground
+              dark:color-scheme:dark
             "
             disabled={loading}
           />

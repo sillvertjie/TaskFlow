@@ -34,8 +34,6 @@ export default function CreateTaskForm({
       return;
     }
 
-    console.log("shortcut active");
-
     function handleKeyboard(event: KeyboardEvent) {
       if (event.altKey && event.key.toLowerCase() === "n") {
         event.preventDefault();
@@ -116,7 +114,7 @@ export default function CreateTaskForm({
         onChange={(event) => setTitle(event.target.value)}
         placeholder="Task title"
         disabled={loading}
-        className="w-full rounded-lg border px-3 py-2 text-sm text-foreground"
+        className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground"
       />
 
       <textarea
@@ -173,7 +171,7 @@ export default function CreateTaskForm({
     px-3
     py-2
     text-sm
-    text-foreground
+text-foreground
     dark:text-white
     dark:color-scheme:dark
   "

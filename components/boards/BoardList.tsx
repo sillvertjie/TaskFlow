@@ -91,7 +91,12 @@ export default function BoardList() {
       ) : (
         <div className="grid gap-4">
           {boards.map((board) => (
-            <BoardCard key={board.id} id={board.id} name={board.name} />
+            <BoardCard
+              key={board.id}
+              id={board.id}
+              name={board.name}
+              onDeleted={loadBoards}
+            />
           ))}
         </div>
       )}

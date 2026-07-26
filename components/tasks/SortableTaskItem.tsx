@@ -40,7 +40,7 @@ export default function SortableTaskItem({
         <button
           type="button"
           {...listeners}
-          className="cursor-grab rounded px-2 text-gray-400 hover:text-gray-900"
+          className="cursor-grab rounded px-2 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200"
           aria-label="Drag task"
         >
           ⋮⋮

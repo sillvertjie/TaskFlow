@@ -7,7 +7,7 @@ export default function Home() {
         <header>
           <h1 className="text-4xl font-bold">TaskFlow</h1>
 
-          <p className="text-gray-600">Manage your boards</p>
+          <p className="text-foreground/70">Manage your boards</p>
         </header>
 
         <BoardList />

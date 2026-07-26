@@ -12,6 +12,8 @@ import { useToast } from "@/lib/toast/context";
 
 import ColumnCard from "./ColumnCard";
 
+import CreateColumnForm from "./CreateColumnForm";
+
 interface Task {
   id: string;
   title: string;
@@ -175,6 +177,7 @@ export default function ColumnList({ boardId }: ColumnListProps) {
 
   return (
     <>
+      <CreateColumnForm boardId={boardId} onCreated={loadColumns} />
       <input
         ref={searchRef}
         type="text"
@@ -182,18 +185,21 @@ export default function ColumnList({ boardId }: ColumnListProps) {
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         className="
-          mb-4
-          w-full
-          rounded
-          border
-          bg-white
-          px-3
-          py-2
-          text-gray-900
-        "
+  mb-4
+  w-full
+  rounded
+  border
+  border-foreground/20
+  bg-background
+  px-3
+  py-2
+  text-foreground
+"
       />
 
-      {syncing && <p className="mb-2 text-xs text-gray-400">Saving order...</p>}
+      {syncing && (
+        <p className="mb-2 text-xs text-foreground/60">Saving order...</p>
+      )}
 
       {columns.length === 0 ? (
         <EmptyState
